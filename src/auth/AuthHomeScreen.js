@@ -5,46 +5,78 @@ import {
   Button,
   View,
   Text,
+  TextInput,
   StyleSheet,
 } from 'react-native';
+import Hr from 'react-native-hr-plus';
 
 import { connect } from 'react-redux';
 
-import { setSeed, setAccount } from '../actions';
+import bip39 from 'react-native-bip39';
+
+import * as Actions from '../actions';
 
 class AuthHomeScreen extends Component {
-  signInAsync = () => {
-    // input seed
-    const seed = 'my name is Edwin';
+  constructor(props) {
+    super(props);
+    this.state = {
+      input: '',
+    };
+  }
 
-    // if success calculate address and privateKey
-    const address = seed.split('').reverse().join('');
-    const privateKey = address.substring(0, 4);
+  createNewWallet = async () => {
+    const mnemonic = await bip39.generateMnemonic(128);
+    this.props.setMnemonic(mnemonic);
+    this.props.deriveWalletFromMnemonic(mnemonic)
+      .then(() => this.props.navigation.navigate('App'))
+      .catch(error => console.warn(error));
+  };
 
-    // save to redux store
-    this.props.setSeed(seed);
-    this.props.setAccount(address, privateKey);
+  restoreWallet = () => {
+    const mnemonic = this.state.input;
+    if (!bip39.validateMnemonic(mnemonic)) {
+      alert('Invalid Mnemonic');
+      return;
+    }
 
-    this.props.navigation.navigate('App');
+    this.props.setMnemonic(mnemonic);
+    this.props.deriveWalletFromMnemonic(mnemonic)
+      .then(() => this.props.navigation.navigate('App'))
+      .catch(error => console.warn(error));
   };
 
   render() {
     return (
       <View style={styles.container}>
-        <Text>I{'\''}m the AuthHomeScreen component</Text>
-        <Button title="Sign In" onPress={this.signInAsync} />
+        <View>
+          <TextInput
+            placeholder="Enter your 12-word Mnemonic"
+            onChangeText={input => this.setState({ input })}
+          />
+          <Button
+            title="Restore your Wallet"
+            onPress={this.restoreWallet}
+          />
+        </View>
+
+        <Hr color="black" width={1}>
+          <Text>or</Text>
+        </Hr>
+
+        <Button
+          title="Create New Wallet"
+          onPress={this.createNewWallet}
+        />
       </View>
     );
   }
 }
 
 const mapDispatchToProps = dispatch => ({
-  setSeed: (seed) => {
-    dispatch(setSeed(seed));
+  setMnemonic: (mnemonic) => {
+    dispatch(Actions.setMnemonic(mnemonic));
   },
-  setAccount: (address, privateKey) => {
-    dispatch(setAccount(address, privateKey));
-  },
+  deriveWalletFromMnemonic: mnemonic => dispatch(Actions.deriveWalletFromMnemonic(mnemonic)),
 });
 
 export default connect(null, mapDispatchToProps)(AuthHomeScreen);

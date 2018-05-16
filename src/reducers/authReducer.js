@@ -1,14 +1,14 @@
 const initialState = {
-  seed: '',
+  mnemonic: '',
   address: '',
   privateKey: '',
 };
 
 const authRudecer = (state = initialState, action) => {
   switch (action.type) {
-    case 'SET_SEED':
+    case 'SET_MNEMONIC':
       return Object.assign({}, state, {
-        seed: action.seed,
+        mnemonic: action.mnemonic,
       });
     case 'SET_ACCOUNT':
       return Object.assign({}, state, {

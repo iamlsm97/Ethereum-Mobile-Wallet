@@ -5,6 +5,7 @@
  */
 
 import React, { Component } from 'react';
+import { YellowBox } from 'react-native';
 
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -12,6 +13,8 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/configureStore';
 import WelcomeLoading from './src/components/WelcomeLoading';
 import RootNavigator from './src/RootNavigator';
+
+YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTImageLoader']);
 
 type Props = {};
 export default class App extends Component<Props> {

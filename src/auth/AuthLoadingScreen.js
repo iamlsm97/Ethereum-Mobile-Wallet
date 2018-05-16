@@ -11,42 +11,42 @@ import {
 
 import { connect } from 'react-redux';
 
-import { setAccount } from '../actions';
+import bip39 from 'react-native-bip39';
+
+import * as Actions from '../actions';
 
 class AuthLoadingScreen extends Component {
   constructor(props) {
     super(props);
-    this.bootstrapAsync();
+    this.bootstrapWallet();
   }
 
-  bootstrapAsync = () => {
-    // get seed
-    const { seed } = this.props;
+  bootstrapWallet = () => {
+    const { mnemonic } = this.props;
 
-    // if seed doesn't exist, navigate to Auth
-    if (!seed || seed === '') {
+    if (!mnemonic || mnemonic === '') {
       this.props.navigation.navigate('Auth');
       return;
     }
 
-    // validate seed first
-    // if error CLEAR_AUTH and navigate to Auth
+    if (!bip39.validateMnemonic(mnemonic)) {
+      this.props.clearAuth();
+      this.props.navigation.navigate('Auth');
+      return;
+    }
 
-    // if success calculate address and privateKey
-    const address = seed.split('').reverse().join('');
-    const privateKey = address.substring(0, 4);
-
-    // save to redux store
-    this.props.setAccount(address, privateKey);
-
-    // then goto App
-    this.props.navigation.navigate('App');
+    this.props.deriveWalletFromMnemonic(mnemonic)
+      .then(() => this.props.navigation.navigate('App'))
+      .catch((error) => {
+        console.warn(error);
+        this.props.navigation.navigate('Auth');
+      });
   };
 
   render() {
     return (
       <View style={styles.container}>
-        <Text>I{'\''}m the AuthLoadingScreen component</Text>
+        <Text>Bootstrapping Wallet</Text>
         <ActivityIndicator size="large" />
         <StatusBar barStyle="default" />
       </View>
@@ -55,14 +55,13 @@ class AuthLoadingScreen extends Component {
 }
 
 const mapStateToProps = state => ({
-  seed: state.auth.seed,
-  address: state.auth.address,
-  privateKey: state.auth.privateKey,
+  mnemonic: state.auth.mnemonic,
 });
 
 const mapDispatchToProps = dispatch => ({
-  setAccount: (address, privateKey) => {
-    dispatch(setAccount(address, privateKey));
+  deriveWalletFromMnemonic: mnemonic => dispatch(Actions.deriveWalletFromMnemonic(mnemonic)),
+  clearAuth: () => {
+    dispatch(Actions.clearAuth());
   },
 });
 

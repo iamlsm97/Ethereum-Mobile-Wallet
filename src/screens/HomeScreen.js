@@ -22,7 +22,7 @@ class HomeScreen extends Component {
     return (
       <View style={styles.container}>
         <Text>I{'\''}m the HomeScreen component</Text>
-        <Text style={styles.info}>Your Seed is {this.props.seed}</Text>
+        <Text style={styles.info}>Your Mnemonic is {this.props.mnemonic}</Text>
         <Text style={styles.info}>Your Adress is {this.props.address}</Text>
         <Text style={styles.info}>Your Private Key is {this.props.privateKey}</Text>
         <Text style={styles.info}>Your ETH balance is {this.props.eth}</Text>
@@ -47,7 +47,7 @@ class HomeScreen extends Component {
 }
 
 const mapStateToProps = state => ({
-  seed: state.auth.seed,
+  mnemonic: state.auth.mnemonic,
   address: state.auth.address,
   privateKey: state.auth.privateKey,
   eth: state.eth,

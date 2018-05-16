@@ -9,7 +9,7 @@ import ethReducer from './ethReducer';
 const authPersistConfig = {
   key: 'auth',
   storage: AsyncStorage,
-  whitelist: ['seed'],
+  whitelist: ['mnemonic'],
 };
 
 const rootReducer = combineReducers({
