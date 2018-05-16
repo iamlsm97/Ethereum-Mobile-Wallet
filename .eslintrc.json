@@ -1,0 +1,29 @@
+{
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "react",
+    "react-native"
+  ],
+  "env": {
+    "react-native/react-native": true,
+    "jest": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "airbnb"
+  ],
+  "rules": {
+    "no-use-before-define": ["error", { "variables": false }],
+
+    "import/no-extraneous-dependencies": 0,
+
+    "react/jsx-filename-extension": 0,
+    "react/prefer-stateless-function": 0,
+    "react/prop-types": 0
+  }
+}
