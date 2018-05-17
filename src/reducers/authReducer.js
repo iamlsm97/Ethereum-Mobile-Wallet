@@ -1,7 +1,6 @@
 const initialState = {
   mnemonic: '',
-  address: '',
-  privateKey: '',
+  wallet: null,
 };
 
 const authRudecer = (state = initialState, action) => {
@@ -10,10 +9,9 @@ const authRudecer = (state = initialState, action) => {
       return Object.assign({}, state, {
         mnemonic: action.mnemonic,
       });
-    case 'SET_ACCOUNT':
+    case 'SET_WALLET':
       return Object.assign({}, state, {
-        address: action.address,
-        privateKey: action.privateKey,
+        wallet: action.wallet,
       });
     case 'CLEAR_AUTH':
       return initialState;

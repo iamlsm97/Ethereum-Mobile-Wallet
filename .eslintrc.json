@@ -18,6 +18,7 @@
     "airbnb"
   ],
   "rules": {
+    "max-len": 0,
     "no-use-before-define": ["error", { "variables": false }],
 
     "import/no-extraneous-dependencies": 0,

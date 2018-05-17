@@ -2,10 +2,11 @@
 
 import React, { Component } from 'react';
 import {
-  View,
-  Text,
   Button,
+  Clipboard,
   StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { connect } from 'react-redux';
@@ -13,7 +14,16 @@ import { connect } from 'react-redux';
 import * as Actions from '../actions';
 
 class HomeScreen extends Component {
-  signOutAsync = () => {
+  static navigationOptions = {
+    title: 'Cryto Wallet Home',
+  };
+
+  copyToClipboard = async (text) => {
+    await Clipboard.setString(text);
+    alert('Copied to Clipboard');
+  }
+
+  signOut = () => {
     this.props.clearAuth();
     this.props.navigation.navigate('Auth');
   };
@@ -21,10 +31,17 @@ class HomeScreen extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text>I{'\''}m the HomeScreen component</Text>
-        <Text style={styles.info}>Your Mnemonic is {this.props.mnemonic}</Text>
-        <Text style={styles.info}>Your Adress is {this.props.address}</Text>
-        <Text style={styles.info}>Your Private Key is {this.props.privateKey}</Text>
+        <Text style={styles.info} onPress={() => this.copyToClipboard(this.props.mnemonic)}>
+          Your Mnemonic is{'\n'}{this.props.mnemonic}
+        </Text>
+        <Text style={styles.info} onPress={() => this.copyToClipboard(this.props.address)}>
+          Your Adress is{'\n'}{this.props.address}
+        </Text>
+        <Text style={styles.info} onPress={() => this.copyToClipboard(this.props.privateKey)}>
+          Your Private Key is{'\n'}{this.props.privateKey}
+        </Text>
+        <Text>Click each for Copying to Clipboard</Text>
+
         <Text style={styles.info}>Your ETH balance is {this.props.eth}</Text>
         <View style={styles.btnContainer}>
           <View style={styles.btn}>
@@ -40,7 +57,7 @@ class HomeScreen extends Component {
             />
           </View>
         </View>
-        <Button title="Sign Out" onPress={this.signOutAsync} />
+        <Button title="Sign Out" onPress={this.signOut} />
       </View>
     );
   }
@@ -48,8 +65,8 @@ class HomeScreen extends Component {
 
 const mapStateToProps = state => ({
   mnemonic: state.auth.mnemonic,
-  address: state.auth.address,
-  privateKey: state.auth.privateKey,
+  address: state.auth.wallet.getChecksumAddressString(),
+  privateKey: state.auth.wallet.getPrivateKeyString(),
   eth: state.eth,
 });
 
@@ -71,7 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   info: {
-    fontSize: 20,
+    fontSize: 18,
   },
   btnContainer: {
     flexDirection: 'row',

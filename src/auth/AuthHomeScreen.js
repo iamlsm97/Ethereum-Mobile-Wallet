@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Hr from 'react-native-hr-plus';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 import { connect } from 'react-redux';
 
@@ -17,19 +18,28 @@ import bip39 from 'react-native-bip39';
 import * as Actions from '../actions';
 
 class AuthHomeScreen extends Component {
+  static navigationOptions = {
+    title: 'Auth Home',
+  };
+
   constructor(props) {
     super(props);
     this.state = {
       input: '',
+      isLoading: false,
     };
   }
 
   createNewWallet = async () => {
+    this.setState({ isLoading: true });
     const mnemonic = await bip39.generateMnemonic(128);
     this.props.setMnemonic(mnemonic);
     this.props.deriveWalletFromMnemonic(mnemonic)
       .then(() => this.props.navigation.navigate('App'))
-      .catch(error => console.warn(error));
+      .catch((error) => {
+        this.setState({ isLoading: false });
+        console.warn(error);
+      });
   };
 
   restoreWallet = () => {
@@ -39,15 +49,26 @@ class AuthHomeScreen extends Component {
       return;
     }
 
-    this.props.setMnemonic(mnemonic);
-    this.props.deriveWalletFromMnemonic(mnemonic)
-      .then(() => this.props.navigation.navigate('App'))
-      .catch(error => console.warn(error));
+    this.setState({ isLoading: true }, () => {
+      this.props.setMnemonic(mnemonic);
+      this.props.deriveWalletFromMnemonic(mnemonic)
+        .then(() => this.props.navigation.navigate('App'))
+        .catch((error) => {
+          this.setState({ isLoading: false });
+          console.warn(error);
+        });
+    });
   };
 
   render() {
     return (
       <View style={styles.container}>
+        <Spinner
+          visible={this.state.isLoading}
+          textContent="Making your Wallet"
+          textStyle={{ color: '#ffffff' }}
+        />
+
         <View>
           <TextInput
             placeholder="Enter your 12-word Mnemonic"

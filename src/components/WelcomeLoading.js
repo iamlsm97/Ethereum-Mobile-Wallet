@@ -12,7 +12,7 @@ export default class WelcomeLoading extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={{ fontSize: 30, textAlign: 'center' }}>Welcome to the BH Labs{'\''} Wallet</Text>
+        <Text style={{ fontSize: 30, textAlign: 'center' }}>Welcome to the BH Labs{'\'\n'}Crypto Wallet</Text>
         <ActivityIndicator size="large" />
       </View>
     );

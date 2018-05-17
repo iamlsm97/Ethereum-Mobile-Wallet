@@ -1,12 +1,14 @@
+import bip39 from 'react-native-bip39';
+import hdkey from 'ethereumjs-wallet/hdkey';
+
 export const setMnemonic = mnemonic => ({
   type: 'SET_MNEMONIC',
   mnemonic,
 });
 
-export const setAccount = (address, privateKey) => ({
-  type: 'SET_ACCOUNT',
-  address,
-  privateKey,
+const setWallet = wallet => ({
+  type: 'SET_WALLET',
+  wallet,
 });
 
 export const clearAuth = () => ({
@@ -19,11 +21,10 @@ export const setEth = amount => ({
 });
 
 export const deriveWalletFromMnemonic = mnemonic => dispatch => new Promise((resolve) => {
-  // calculate address and privateKey
-  const address = mnemonic.split('').reverse().join('');
-  const privateKey = address.substring(0, 10);
-
-  // save to redux store
-  dispatch(setAccount(address, privateKey));
+  const rootSeed = bip39.mnemonicToSeed(mnemonic);
+  const hdwallet = hdkey.fromMasterSeed(rootSeed);
+  const path = "m/44'/60'/0'/0/0";
+  const wallet = hdwallet.derivePath(path).getWallet();
+  dispatch(setWallet(wallet));
   resolve();
 });

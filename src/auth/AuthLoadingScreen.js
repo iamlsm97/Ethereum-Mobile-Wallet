@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 import {
   ActivityIndicator,
-  StatusBar,
   View,
   Text,
   StyleSheet,
@@ -16,8 +15,7 @@ import bip39 from 'react-native-bip39';
 import * as Actions from '../actions';
 
 class AuthLoadingScreen extends Component {
-  constructor(props) {
-    super(props);
+  componentDidMount() {
     this.bootstrapWallet();
   }
 
@@ -35,20 +33,21 @@ class AuthLoadingScreen extends Component {
       return;
     }
 
-    this.props.deriveWalletFromMnemonic(mnemonic)
-      .then(() => this.props.navigation.navigate('App'))
-      .catch((error) => {
-        console.warn(error);
-        this.props.navigation.navigate('Auth');
-      });
+    requestAnimationFrame(() => {
+      this.props.deriveWalletFromMnemonic(mnemonic)
+        .then(() => this.props.navigation.navigate('App'))
+        .catch((error) => {
+          console.warn(error);
+          this.props.navigation.navigate('Auth');
+        });
+    });
   };
 
   render() {
     return (
       <View style={styles.container}>
-        <Text>Bootstrapping Wallet</Text>
+        <Text style={{ fontSize: 20 }}>Bootstrapping your Wallet</Text>
         <ActivityIndicator size="large" />
-        <StatusBar barStyle="default" />
       </View>
     );
   }
