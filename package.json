@@ -18,6 +18,7 @@
     "react-native": "0.55.4",
     "react-native-bip39": "^2.3.0",
     "react-native-crypto": "^2.1.2",
+    "react-native-fast-crypto": "^1.5.5",
     "react-native-hr-plus": "^1.0.6",
     "react-native-loading-spinner-overlay": "^0.5.2",
     "react-native-randombytes": "^3.1.0",

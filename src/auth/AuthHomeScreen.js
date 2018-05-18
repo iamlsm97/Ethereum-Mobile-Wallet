@@ -30,16 +30,17 @@ class AuthHomeScreen extends Component {
     };
   }
 
-  createNewWallet = async () => {
-    this.setState({ isLoading: true });
-    const mnemonic = await bip39.generateMnemonic(128);
-    this.props.setMnemonic(mnemonic);
-    this.props.deriveWalletFromMnemonic(mnemonic)
-      .then(() => this.props.navigation.navigate('App'))
-      .catch((error) => {
-        this.setState({ isLoading: false });
-        console.warn(error);
-      });
+  createNewWallet = () => {
+    this.setState({ isLoading: true }, async () => {
+      const mnemonic = await bip39.generateMnemonic(128);
+      this.props.setMnemonic(mnemonic);
+      this.props.deriveWalletFromMnemonic(mnemonic)
+        .then(() => this.props.navigation.navigate('App'))
+        .catch((error) => {
+          this.setState({ isLoading: false });
+          console.warn(error);
+        });
+    });
   };
 
   restoreWallet = () => {
