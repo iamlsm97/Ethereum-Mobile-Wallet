@@ -29,8 +29,8 @@ const mnemonicToSeed = (mnemonic, password) => {
   return pbkdf2.deriveAsync(mnemonicBuffer, saltBuffer, 2048, 64, 'sha512');
 };
 
-export const deriveWalletFromMnemonic = mnemonic => dispatch => new Promise((resolve) => {
-  const rootSeed = mnemonicToSeed(mnemonic);
+export const deriveWalletFromMnemonic = mnemonic => dispatch => new Promise(async (resolve) => {
+  const rootSeed = await mnemonicToSeed(mnemonic);
   const hdwallet = hdkey.fromMasterSeed(rootSeed);
   const path = "m/44'/60'/0'/0/0";
   const wallet = hdwallet.derivePath(path).getWallet();
