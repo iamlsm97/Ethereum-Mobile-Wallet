@@ -13,20 +13,11 @@ import { connect } from 'react-redux';
 
 import * as Actions from '../actions';
 
-class HomeScreen extends Component {
-  static navigationOptions = {
-    title: 'Cryto Wallet Home',
-  };
-
+class AccountScreen extends Component {
   copyToClipboard = async (text) => {
     await Clipboard.setString(text);
     alert('Copied to Clipboard');
   }
-
-  signOut = () => {
-    this.props.clearAuth();
-    this.props.navigation.navigate('Auth');
-  };
 
   render() {
     return (
@@ -42,22 +33,21 @@ class HomeScreen extends Component {
         </Text>
         <Text>Click each for Copying to Clipboard</Text>
 
-        <Text style={styles.info}>Your ETH balance is {this.props.eth}</Text>
+        <Text style={styles.info}>Your ETH balance is {this.props.balance}</Text>
         <View style={styles.btnContainer}>
           <View style={styles.btn}>
             <Button
               title="set to 3"
-              onPress={() => this.props.setEth(3)}
+              onPress={() => this.props.setBalance(3)}
             />
           </View>
           <View style={styles.btn}>
             <Button
               title="set to 100"
-              onPress={() => this.props.setEth(100)}
+              onPress={() => this.props.setBalance(100)}
             />
           </View>
         </View>
-        <Button title="Sign Out" onPress={this.signOut} />
       </View>
     );
   }
@@ -67,19 +57,19 @@ const mapStateToProps = state => ({
   mnemonic: state.auth.mnemonic,
   address: state.auth.wallet.getChecksumAddressString(),
   privateKey: state.auth.wallet.getPrivateKeyString(),
-  eth: state.eth,
+  balance: state.eth.balance,
 });
 
 const mapDispatchToProps = dispatch => ({
-  clearAuth: () => {
-    dispatch(Actions.clearAuth());
+  setWeb3: (web3) => {
+    dispatch(Actions.setWeb3(web3));
   },
-  setEth: (amount) => {
-    dispatch(Actions.setEth(amount));
+  setBalance: (amount) => {
+    dispatch(Actions.setBalance(amount));
   },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(AccountScreen);
 
 const styles = StyleSheet.create({
   container: {

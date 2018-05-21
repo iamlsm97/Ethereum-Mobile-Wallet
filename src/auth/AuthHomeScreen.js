@@ -19,7 +19,7 @@ import * as Actions from '../actions';
 
 class AuthHomeScreen extends Component {
   static navigationOptions = {
-    title: 'Auth Home',
+    title: 'Crypto Wallet React Native',
   };
 
   constructor(props) {

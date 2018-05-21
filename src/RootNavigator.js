@@ -1,13 +1,13 @@
 import { createSwitchNavigator } from 'react-navigation';
 
-import AppStack from './AppStack';
+import AppTab from './AppTab';
 import AuthStack from './auth/AuthStack';
 import AuthLoadingScreen from './auth/AuthLoadingScreen';
 
 const RootNavigator = createSwitchNavigator(
   {
     AuthLoading: AuthLoadingScreen,
-    App: AppStack,
+    App: AppTab,
     Auth: AuthStack,
   },
   {

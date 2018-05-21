@@ -2,6 +2,8 @@ import unorm from 'unorm';
 import { pbkdf2 } from 'react-native-fast-crypto';
 import hdkey from 'ethereumjs-wallet/hdkey';
 
+import CONSTS from '../consts';
+
 export const setMnemonic = mnemonic => ({
   type: 'SET_MNEMONIC',
   mnemonic,
@@ -16,9 +18,18 @@ export const clearAuth = () => ({
   type: 'CLEAR_AUTH',
 });
 
-export const setEth = amount => ({
-  type: 'SET_ETH',
+const setWeb3 = web3 => ({
+  type: 'SET_WEB3',
+  web3,
+});
+
+export const setBalance = amount => ({
+  type: 'SET_BALANCE',
   amount,
+});
+
+export const clearEth = () => ({
+  type: 'CLEAR_ETH',
 });
 
 // functions from bip39 package
@@ -32,8 +43,7 @@ const mnemonicToSeed = (mnemonic, password) => {
 export const deriveWalletFromMnemonic = mnemonic => dispatch => new Promise(async (resolve) => {
   const rootSeed = await mnemonicToSeed(mnemonic);
   const hdwallet = hdkey.fromMasterSeed(rootSeed);
-  const path = "m/44'/60'/0'/0/0";
-  const wallet = hdwallet.derivePath(path).getWallet();
+  const wallet = hdwallet.derivePath(CONSTS.PATH).getWallet();
   dispatch(setWallet(wallet));
   resolve();
 });
