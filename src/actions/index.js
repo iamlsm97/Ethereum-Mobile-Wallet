@@ -18,7 +18,7 @@ export const clearAuth = () => ({
   type: 'CLEAR_AUTH',
 });
 
-const setWeb3 = web3 => ({
+export const setWeb3 = web3 => ({
   type: 'SET_WEB3',
   web3,
 });

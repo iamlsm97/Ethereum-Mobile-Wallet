@@ -2,18 +2,64 @@
 
 import React, { Component } from 'react';
 import {
+  ActivityIndicator,
   Button,
   Clipboard,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import Toast from 'react-native-simple-toast';
 
 import { connect } from 'react-redux';
 
+import Web3 from 'web3';
+
+import CONSTS from '../consts';
 import * as Actions from '../actions';
 
 class AccountScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoading: true,
+    };
+  }
+
+  componentDidMount() {
+    const web3 = new Web3(CONSTS.ROPSTEN_RPC_URL);
+    web3.eth.net.isListening()
+      .then((isListening) => {
+        if (isListening) {
+          Toast.show('Connected to the Ethereum Network');
+          this.props.setWeb3(web3);
+          this.fetchBalance();
+        } else {
+          this.setState({ isLoading: false });
+          Toast.show('Failed to Connect Ethereum Network', Toast.LONG);
+        }
+      })
+      .catch((error) => {
+        this.setState({ isLoading: false });
+        Toast.show('Invalid JSON RPC response', Toast.LONG);
+        console.warn(error);
+      });
+  }
+
+  fetchBalance = () => {
+    this.setState({ isLoading: true });
+    this.props.web3.eth.getBalance(this.props.address)
+      .then((balance) => {
+        this.setState({ isLoading: false });
+        this.props.setBalance(this.props.web3.utils.fromWei(balance, 'ether'));
+      })
+      .catch((error) => {
+        this.setState({ isLoading: false });
+        Toast.show('Please Re-Fetch the Balance');
+        console.warn(error);
+      });
+  }
+
   copyToClipboard = async (text) => {
     await Clipboard.setString(text);
     alert('Copied to Clipboard');
@@ -33,21 +79,17 @@ class AccountScreen extends Component {
         </Text>
         <Text>Click each for Copying to Clipboard</Text>
 
-        <Text style={styles.info}>Your ETH balance is {this.props.balance}</Text>
-        <View style={styles.btnContainer}>
-          <View style={styles.btn}>
-            <Button
-              title="set to 3"
-              onPress={() => this.props.setBalance(3)}
-            />
-          </View>
-          <View style={styles.btn}>
-            <Button
-              title="set to 100"
-              onPress={() => this.props.setBalance(100)}
-            />
+        <View style={{ alignItems: 'center' }}>
+          <Text style={styles.info}>Your ETH balance is</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={styles.info}>{this.props.balance} ether</Text>
+            {this.state.isLoading && <ActivityIndicator />}
           </View>
         </View>
+        <Button
+          title="Fetch Balance"
+          onPress={this.fetchBalance}
+        />
       </View>
     );
   }
@@ -57,6 +99,7 @@ const mapStateToProps = state => ({
   mnemonic: state.auth.mnemonic,
   address: state.auth.wallet.getChecksumAddressString(),
   privateKey: state.auth.wallet.getPrivateKeyString(),
+  web3: state.eth.web3,
   balance: state.eth.balance,
 });
 
@@ -79,11 +122,5 @@ const styles = StyleSheet.create({
   },
   info: {
     fontSize: 18,
-  },
-  btnContainer: {
-    flexDirection: 'row',
-  },
-  btn: {
-    margin: 10,
   },
 });

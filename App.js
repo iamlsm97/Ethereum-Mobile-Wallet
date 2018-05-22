@@ -14,7 +14,12 @@ import { store, persistor } from './src/configureStore';
 import WelcomeLoading from './src/components/WelcomeLoading';
 import RootNavigator from './src/RootNavigator';
 
-YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTImageLoader']);
+YellowBox.ignoreWarnings([
+  'Warning: isMounted(...) is deprecated',
+  'Module RCTImageLoader',
+  'Class RCTCxxModule',
+  'Module RNRandomBytes',
+]);
 
 type Props = {};
 export default class App extends Component<Props> {
