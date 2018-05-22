@@ -8,6 +8,7 @@
     "lint": "eslint ./ --fix"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "ethereumjs-wallet": "^0.6.0",
     "node-libs-react-native": "^1.0.2",
     "react": "16.3.1",
