@@ -19,6 +19,7 @@ YellowBox.ignoreWarnings([
   'Module RCTImageLoader',
   'Class RCTCxxModule',
   'Module RNRandomBytes',
+  'Module RCTWebViewBridgeManager',
 ]);
 
 type Props = {};
