@@ -2,14 +2,14 @@ import { createBottomTabNavigator } from 'react-navigation';
 
 import AccountScreen from './screens/AccountScreen';
 import TxScreen from './screens/TxScreen';
+import BrowserScreen from './screens/BrowserScreen';
 import SettingScreen from './screens/SettingScreen';
-import TempBrowserScreen from './screens/TempBrowserScreen'
 
 const AppTab = createBottomTabNavigator({
   Account: AccountScreen,
   Tx: TxScreen,
+  Browser: BrowserScreen,
   Setting: SettingScreen,
-  TempBrowser: TempBrowserScreen,
 });
 
 export default AppTab;
