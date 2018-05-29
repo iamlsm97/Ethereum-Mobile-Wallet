@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   info: {
+    marginHorizontal: 10,
     fontSize: 18,
   },
 });

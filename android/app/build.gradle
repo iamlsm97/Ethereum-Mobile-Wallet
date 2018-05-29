@@ -137,7 +137,7 @@ android {
 }
 
 dependencies {
-    compile project(':react-native-webview-bridge-updated')
+    compile project(':react-native-fs')
     compile project(':react-native-fast-crypto')
     compile project(':react-native-randombytes')
     compile fileTree(dir: "libs", include: ["*.jar"])

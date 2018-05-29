@@ -6,7 +6,7 @@ import android.webkit.WebView;
 
 import com.bitgo.randombytes.RandomBytesPackage;
 import com.facebook.react.ReactApplication;
-import com.github.alinz.reactnativewebviewbridge.WebViewBridgePackage;
+import com.rnfs.RNFSPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -29,7 +29,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new WebViewBridgePackage(),
+            new RNFSPackage(),
             new RNFastCryptoPackage(),
             new RandomBytesPackage()
       );

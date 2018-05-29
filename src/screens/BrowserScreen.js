@@ -2,53 +2,101 @@
  * Created by jack on 23/05/2018.
  */
 import React, { Component } from 'react';
+import { Platform, WebView } from 'react-native';
+import Spinner from 'react-native-loading-spinner-overlay';
+import Toast from 'react-native-simple-toast';
 
 import { connect } from 'react-redux';
 
-import WebViewBridge from 'react-native-webview-bridge-updated';
+import RNFS from 'react-native-fs';
 
-const injectedJavaScript = `
-(function () {
-  if (WebViewBridge) {
-    WebViewBridge.onMessage = function (message) {
-      if (message === "hello from react-native") {
-        console.log("we have got a message from react-native! yeah");
-        WebViewBridge.send("got the message inside webview");
-      }
-    };
-
-    WebViewBridge.send("hello from webview");
-  }
-}());
-`;
+import CONSTS from '../consts';
 
 class BrowserScreen extends Component {
   constructor(props) {
     super(props);
-    this.webViewBridge = React.createRef();
+    this.webview = React.createRef();
+    this.web3File = '';
+    this.jsToInject = '';
+    this.state = {
+      isLoading: true,
+    };
   }
 
-  onBridgeMessage = (message) => {
-    switch (message) {
-      case 'hello from webview':
-        this.webViewBridge.current.sendToBridge('hello from react-native');
-        break;
-      case 'got the message inside webview':
-        console.log('we have got a message from webview! yeah');
-        break;
-      default:
-        console.log('received an unhandled message!');
-        break;
-    }
+  componentDidMount() {
+    Platform.OS === 'ios' ? this.readWeb3FileIOS() : this.readWeb3FileAndroid();
+  }
+
+  readWeb3FileIOS = () => {
+    RNFS.readFile(`${RNFS.MainBundlePath}/web3.min.js`, 'utf8')
+      .then((result) => {
+        this.web3File = result;
+        this.jsToInject = `
+console.log("inject web3 to the webview");
+${this.web3File}
+window.web3 = new window.Web3(new window.Web3.providers.HttpProvider("${CONSTS.ROPSTEN_RPC_URL}"));
+      `;
+
+        this.setState({
+          isLoading: false,
+        });
+      })
+      .catch((error) => {
+        Toast.show('Failed to read web3.min.js', Toast.LONG);
+        console.warn(error);
+        this.setState({
+          isLoading: false,
+        });
+      });
+  }
+
+  readWeb3FileAndroid = () => {
+    RNFS.readFileAssets('web3.min.js', 'utf8')
+      .then((result) => {
+        this.web3File = result;
+        this.jsToInject = `
+console.log("inject web3 to the webview");
+${this.web3File}
+window.web3 = new window.Web3(new window.Web3.providers.HttpProvider("${CONSTS.ROPSTEN_RPC_URL}"));
+        `;
+
+        if (Platform.OS === 'android') {
+          this.jsToInject = encodeURI(this.jsToInject);
+        }
+
+        this.setState({
+          isLoading: false,
+        });
+      })
+      .catch((error) => {
+        Toast.show('Failed to read web3.min.js', Toast.LONG);
+        console.warn(error);
+        this.setState({
+          isLoading: false,
+        });
+      });
+  }
+
+  onLoadStart = () => {
+    this.webview.current.injectJavaScript(this.jsToInject);
   }
 
   render() {
+    if (this.state.isLoading) {
+      return (
+        <Spinner
+          visible={this.state.isLoading}
+          textContent="Loading Browser"
+          textStyle={{ color: '#ffffff' }}
+        />
+      );
+    }
+
     return (
-      <WebViewBridge
-        ref={this.webViewBridge}
+      <WebView
+        ref={this.webview}
         source={{ uri: 'http://bcc-codewarriors.com/Ethereum/INF239/Som/play.html' }}
-        onBridgeMessage={this.onBridgeMessage}
-        injectedJavaScript={injectedJavaScript}
+        onLoadStart={this.onLoadStart}
       />
     );
   }
