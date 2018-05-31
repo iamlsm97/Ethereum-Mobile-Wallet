@@ -16,27 +16,46 @@ import { connect } from 'react-redux';
 import EthereumTx from 'ethereumjs-tx';
 
 import CONSTS from '../consts';
-import * as Actions from '../actions';
+import Actions from '../actions/index';
 
 class TxScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      to: '',
-      amount: '', // in ether
-      gasPrice: 28, // in gwei
-      gasLimit: 21000,
       txHash: '',
     };
   }
 
-  send = async () => {
+  estimateGas = async () => {
+    const gasLimit = await this.props.web3.eth.estimateGas({
+      to: this.props.to,
+      data: this.props.data,
+    });
+    this.props.setGasLimit(gasLimit.toString());
+  }
+
+  handleReject = () => {
+    if (this.props.callback) {
+      this.props.callback.fail('User Rejected to sign Transaction');
+      this.props.navigation.navigate('Browser');
+    }
+    this.props.clearTx();
+    this.setState({ txHash: '' });
+  }
+
+  handleApprove = async () => {
+    const web3Utils = this.props.web3.utils;
+    const value = this.props.value === '' ? '0' : this.props.value;
+    const gasPrice = this.props.gasPrice === '' ? CONSTS.DEFAULT_GAS_PRICE.toString() : this.props.gasPrice;
+    const gasLimit = this.props.gasLimit === '' ? CONSTS.DEFAULT_GAS_LIMIT.toString() : this.props.gasLimit;
+
     const txParams = {
-      nonce: this.props.web3.utils.toHex(await this.props.web3.eth.getTransactionCount(this.props.address)),
-      to: this.state.to,
-      value: this.props.web3.utils.toHex(this.props.web3.utils.toWei(this.state.amount.toString(), 'ether')),
-      gasPrice: this.props.web3.utils.toHex(this.props.web3.utils.toWei(this.state.gasPrice.toString(), 'gwei')),
-      gasLimit: this.props.web3.utils.toHex(this.state.gasLimit),
+      nonce: web3Utils.toHex(await this.props.web3.eth.getTransactionCount(this.props.address)),
+      to: this.props.to,
+      value: web3Utils.toHex(web3Utils.toWei(value, 'ether')),
+      gasPrice: web3Utils.toHex(web3Utils.toWei(gasPrice, 'gwei')),
+      gasLimit: web3Utils.toHex(gasLimit),
+      data: this.props.data,
     };
 
     const tx = new EthereumTx(txParams);
@@ -44,16 +63,22 @@ class TxScreen extends Component {
     const serializedTx = tx.serialize();
 
     this.props.web3.eth.sendSignedTransaction(`0x${serializedTx.toString('hex')}`)
-      .once('transactionHash', txHash => this.setState({ txHash }))
+      .once('transactionHash', (txHash) => {
+        this.setState({ txHash });
+        if (this.props.callback) {
+          this.props.callback.respond(txHash);
+          this.props.navigation.navigate('Browser');
+        }
+      })
       .once('receipt', (receipt) => {
         Toast.show('Transaction is Confirmed!');
         console.log(receipt);
         this.props.web3.eth.getBalance(this.props.address)
-          .then(balance => this.props.setBalance(this.props.web3.utils.fromWei(balance, 'ether')));
+          .then(balance => this.props.setBalance(web3Utils.fromWei(balance, 'ether')));
       })
       .on('confirmation', (confNumber, receipt) => console.log(confNumber, receipt))
       .on('error', error => console.warn(error));
-  };
+  }
 
   openEtherscan = () => {
     Linking.openURL(`${CONSTS.ROPSTEN_ETHERSCAN_URL}/tx/${this.state.txHash}`);
@@ -76,7 +101,8 @@ class TxScreen extends Component {
           <TextInput
             style={styles.formInput}
             placeholder="Enter Address to send"
-            onChangeText={to => this.setState({ to })}
+            onChangeText={to => this.props.setTo(to)}
+            value={this.props.to}
           />
         </View>
 
@@ -85,7 +111,8 @@ class TxScreen extends Component {
           <TextInput
             style={styles.formInput}
             placeholder="Enter Amount in ether to send"
-            onChangeText={amount => this.setState({ amount })}
+            onChangeText={value => this.props.setValue(value)}
+            value={this.props.value}
           />
         </View>
 
@@ -93,22 +120,42 @@ class TxScreen extends Component {
           <Text style={styles.formLabel}>Gas Price</Text>
           <TextInput
             style={styles.formInput}
-            placeholder="Enter Gas Price in gwei. Default is 28 gwei"
-            onChangeText={gasPrice => this.setState({ gasPrice })}
+            placeholder={`Enter Gas Price in gwei. Default is ${CONSTS.DEFAULT_GAS_PRICE} gwei`}
+            onChangeText={gasPrice => this.props.setGasPrice(gasPrice)}
+            value={this.props.gasPrice}
           />
         </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.formLabel}>Gas Limit</Text>
+          <View style={styles.formInput}>
+            <TextInput
+              style={{ flex: 1 }}
+              placeholder={`Default is ${CONSTS.DEFAULT_GAS_LIMIT}`}
+              onChangeText={gasLimit => this.props.setGasLimit(gasLimit)}
+              value={this.props.gasLimit}
+            />
+            <Button title="Estimate" onPress={this.estimateGas} />
+          </View>
+        </View>
+
+        <View style={styles.formGroup}>
+          <Text style={styles.formLabel}>Data</Text>
           <TextInput
             style={styles.formInput}
-            placeholder="Enter Gas Limit. Default is 21000"
-            onChangeText={gasLimit => this.setState({ gasLimit })}
+            placeholder="Only for using Contracts"
+            onChangeText={data => this.props.setData(data)}
+            value={this.props.data}
           />
         </View>
 
-        <View style={{ flex: 1 }}>
-          <Button title="Send Ether" onPress={this.send} />
+        <View style={styles.btnGroup}>
+          <View style={styles.btnContainer}>
+            <Button title="Reject" onPress={this.handleReject} color="#ff0000" />
+          </View>
+          <View style={styles.btnContainer}>
+            <Button title="Approve" onPress={this.handleApprove} />
+          </View>
         </View>
 
         {this.state.txHash !== '' &&
@@ -125,11 +172,36 @@ const mapStateToProps = state => ({
   address: state.auth.wallet.getChecksumAddressString(),
   privateKey: state.auth.wallet.getPrivateKeyString(),
   web3: state.eth.web3,
+
+  to: state.tx.to,
+  value: state.tx.value,
+  gasPrice: state.tx.gasPrice,
+  gasLimit: state.tx.gasLimit,
+  data: state.tx.data,
+  callback: state.tx.callback,
 });
 
 const mapDispatchToProps = dispatch => ({
   setBalance: (amount) => {
-    dispatch(Actions.setBalance(amount));
+    dispatch(Actions.eth.setBalance(amount));
+  },
+  setTo: (to) => {
+    dispatch(Actions.tx.setTo(to));
+  },
+  setValue: (value) => {
+    dispatch(Actions.tx.setValue(value));
+  },
+  setGasPrice: (gasPrice) => {
+    dispatch(Actions.tx.setGasPrice(gasPrice));
+  },
+  setGasLimit: (gasLimit) => {
+    dispatch(Actions.tx.setGasLimit(gasLimit));
+  },
+  setData: (data) => {
+    dispatch(Actions.tx.setData(data));
+  },
+  clearTx: () => {
+    dispatch(Actions.tx.clearTx());
   },
 });
 
@@ -152,6 +224,17 @@ const styles = StyleSheet.create({
   },
   formInput: {
     flex: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  btnGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  btnContainer: {
+    flex: 1,
+    marginHorizontal: 30,
   },
   textLink: {
     color: 'blue',

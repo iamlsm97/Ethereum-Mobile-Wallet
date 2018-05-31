@@ -10,7 +10,8 @@ import { connect } from 'react-redux';
 
 import RNFS from 'react-native-fs';
 
-import CONSTS from '../consts';
+import CustomProvider from '../eth/CustomProvider';
+import Web3RPCHandler from '../eth/Web3RPCHandler';
 
 class BrowserScreen extends Component {
   constructor(props) {
@@ -24,41 +25,17 @@ class BrowserScreen extends Component {
   }
 
   componentDidMount() {
-    Platform.OS === 'ios' ? this.readWeb3FileIOS() : this.readWeb3FileAndroid();
-  }
+    const providerParam = {
+      address: this.props.address,
+      networkId: 3,
+    };
 
-  readWeb3FileIOS = () => {
-    RNFS.readFile(`${RNFS.MainBundlePath}/web3.min.js`, 'utf8')
+    Platform.OS === 'ios' ? this.readWeb3FileIOS() : this.readWeb3FileAndroid()
       .then((result) => {
         this.web3File = result;
         this.jsToInject = `
-console.log("inject web3 to the webview");
 ${this.web3File}
-window.web3 = new window.Web3(new window.Web3.providers.HttpProvider("${CONSTS.ROPSTEN_RPC_URL}"));
-      `;
-
-        this.setState({
-          isLoading: false,
-        });
-      })
-      .catch((error) => {
-        Toast.show('Failed to read web3.min.js', Toast.LONG);
-        console.warn(error);
-        this.setState({
-          isLoading: false,
-        });
-      });
-  }
-
-  readWeb3FileAndroid = () => {
-    RNFS.readFileAssets('web3.min.js', 'utf8')
-      .then((result) => {
-        this.web3File = result;
-        this.jsToInject = `
-console.log("inject web3 to the webview");
-${this.web3File}
-window.web3 = new window.Web3(new window.Web3.providers.HttpProvider("${CONSTS.ROPSTEN_RPC_URL}"));
-        `;
+(${CustomProvider.toString()}(${JSON.stringify(providerParam)}));`;
 
         if (Platform.OS === 'android') {
           this.jsToInject = encodeURI(this.jsToInject);
@@ -77,8 +54,31 @@ window.web3 = new window.Web3(new window.Web3.providers.HttpProvider("${CONSTS.R
       });
   }
 
+  readWeb3FileIOS = () => RNFS.readFile(`${RNFS.MainBundlePath}/web3.min.js`, 'utf8')
+
+  readWeb3FileAndroid = () => RNFS.readFileAssets('web3.min.js', 'utf8')
+
   onLoadStart = () => {
     this.webview.current.injectJavaScript(this.jsToInject);
+  }
+
+  respond = (id, result) => {
+    this.webview.current.injectJavaScript(`window.__internal__.respond(${JSON.stringify(id)}, ${JSON.stringify(result)})`);
+  }
+
+  fail = (id, error) => {
+    this.webview.current.injectJavaScript(`window.__internal__.fail(${JSON.stringify(id)}, ${JSON.stringify(error)})`);
+  }
+
+  onMessage = (event) => {
+    let payload = null;
+    try {
+      payload = JSON.parse(event.nativeEvent.data);
+    } catch (e) {
+      return;
+    }
+
+    new Web3RPCHandler(this.props.web3, payload, this.props.address, this.props.navigation, this.respond, this.fail, this.props.dispatch).handle();
   }
 
   render() {
@@ -97,6 +97,7 @@ window.web3 = new window.Web3(new window.Web3.providers.HttpProvider("${CONSTS.R
         ref={this.webview}
         source={{ uri: 'http://bcc-codewarriors.com/Ethereum/INF239/Som/play.html' }}
         onLoadStart={this.onLoadStart}
+        onMessage={this.onMessage}
       />
     );
   }
@@ -104,6 +105,7 @@ window.web3 = new window.Web3(new window.Web3.providers.HttpProvider("${CONSTS.R
 
 const mapStateToProps = state => ({
   address: state.auth.wallet.getChecksumAddressString(),
+  web3: state.eth.web3,
 });
 
-export default connect(mapStateToProps, null)(BrowserScreen);
+export default connect(mapStateToProps)(BrowserScreen);

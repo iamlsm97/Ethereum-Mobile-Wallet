@@ -15,7 +15,7 @@ import { connect } from 'react-redux';
 
 import bip39 from 'react-native-bip39';
 
-import * as Actions from '../actions';
+import Actions from '../actions/index';
 
 class AuthHomeScreen extends Component {
   static navigationOptions = {
@@ -96,9 +96,9 @@ class AuthHomeScreen extends Component {
 
 const mapDispatchToProps = dispatch => ({
   setMnemonic: (mnemonic) => {
-    dispatch(Actions.setMnemonic(mnemonic));
+    dispatch(Actions.auth.setMnemonic(mnemonic));
   },
-  deriveWalletFromMnemonic: mnemonic => dispatch(Actions.deriveWalletFromMnemonic(mnemonic)),
+  deriveWalletFromMnemonic: mnemonic => dispatch(Actions.auth.deriveWalletFromMnemonic(mnemonic)),
 });
 
 export default connect(null, mapDispatchToProps)(AuthHomeScreen);

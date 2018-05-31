@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 
 import bip39 from 'react-native-bip39';
 
-import * as Actions from '../actions';
+import Actions from '../actions/index';
 
 class AuthLoadingScreen extends Component {
   componentDidMount() {
@@ -58,9 +58,9 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  deriveWalletFromMnemonic: mnemonic => dispatch(Actions.deriveWalletFromMnemonic(mnemonic)),
+  deriveWalletFromMnemonic: mnemonic => dispatch(Actions.auth.deriveWalletFromMnemonic(mnemonic)),
   clearAuth: () => {
-    dispatch(Actions.clearAuth());
+    dispatch(Actions.auth.clearAuth());
   },
 });
 

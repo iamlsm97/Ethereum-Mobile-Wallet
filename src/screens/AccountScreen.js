@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 import Web3 from 'web3';
 
 import CONSTS from '../consts';
-import * as Actions from '../actions';
+import Actions from '../actions/index';
 
 class AccountScreen extends Component {
   constructor(props) {
@@ -105,10 +105,10 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   setWeb3: (web3) => {
-    dispatch(Actions.setWeb3(web3));
+    dispatch(Actions.eth.setWeb3(web3));
   },
   setBalance: (amount) => {
-    dispatch(Actions.setBalance(amount));
+    dispatch(Actions.eth.setBalance(amount));
   },
 });
 

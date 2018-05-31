@@ -14,7 +14,7 @@ import { connect } from 'react-redux';
 import axios from 'axios';
 
 import CONSTS from '../consts';
-import * as Actions from '../actions';
+import Actions from '../actions';
 
 class SettingScreen extends Component {
   openEtherscan = () => {
@@ -55,10 +55,10 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   clearAuth: () => {
-    dispatch(Actions.clearAuth());
+    dispatch(Actions.auth.clearAuth());
   },
   clearEth: () => {
-    dispatch(Actions.clearEth());
+    dispatch(Actions.eth.clearEth());
   },
 });
 
