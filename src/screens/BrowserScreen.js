@@ -78,7 +78,8 @@ ${this.web3File}
       return;
     }
 
-    new Web3RPCHandler(this.props.web3, payload, this.props.address, this.props.navigation, this.respond, this.fail, this.props.dispatch).handle();
+    const networkId = 3;
+    new Web3RPCHandler(this.props.web3, payload, this.props.address, networkId, this.props.navigation, this.respond, this.fail, this.props.dispatch).handle();
   }
 
   render() {
@@ -95,7 +96,7 @@ ${this.web3File}
     return (
       <WebView
         ref={this.webview}
-        source={{ uri: 'http://bcc-codewarriors.com/Ethereum/INF239/Som/play.html' }}
+        source={{ uri: 'https://hyunseokyoon.github.io/' }}
         onLoadStart={this.onLoadStart}
         onMessage={this.onMessage}
       />

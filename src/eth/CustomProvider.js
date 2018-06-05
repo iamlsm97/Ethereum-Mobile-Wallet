@@ -4,7 +4,6 @@ export default (providerParam) => {
   const CustomProvider = function () {};
 
   CustomProvider.prototype.handleSend = function (payload) {
-    console.log("into the handleSend");
     const self = this;
     const address = providerParam.address;
     const networkId = providerParam.networkId;
@@ -12,7 +11,6 @@ export default (providerParam) => {
 
     switch (payload.method) {
       case 'eth_accounts':
-      console.log("received eth_accounts");
       result = address ? [address] : [];
       break;
 
@@ -43,7 +41,6 @@ export default (providerParam) => {
 
   CustomProvider.prototype.handleSendAsync = function (payload) {
     return new Promise(function (resolve, reject) {
-      console.log("handleSendAsync function promise");
       handlerMap.set(payload.id, function (error, result) {
         if (error) {
           reject(error);
@@ -53,20 +50,15 @@ export default (providerParam) => {
           resolve(result);
         }
       });
-      window.postMessage(JSON.stringify(payload));
+      window.postMessage(JSON.stringify(payload), '*');
     });
   };
 
   CustomProvider.prototype.send = function (payload) {
-    console.log('CustomProvider send function');
-    console.log(payload);
     return Array.isArray(payload) ? payload.map(this.handleSend) : this.handleSend(payload);
   };
 
   CustomProvider.prototype.sendAsync = function (payload, cb) {
-    console.log('CustomProvider sendAsync function');
-    console.log(payload);
-    console.log(cb.toString());
     if (Array.isArray(payload)) {
       Promise.all(payload.map(this.handleSendAsync))
       .then(function (result) {

@@ -1,10 +1,14 @@
+import axios from 'axios';
+
+import CONSTS from '../consts';
 import Actions from '../actions/index';
 
 export default class Web3RPCHandler {
-  constructor(web3, payload, address, navigation, respondCallback, failCallback, dispatch) {
+  constructor(web3, payload, address, networkId, navigation, respondCallback, failCallback, dispatch) {
     this.web3 = web3;
     this.payload = payload;
     this.address = address;
+    this.networkId = networkId;
     this.navigation = navigation;
     this.respondCallback = respondCallback;
     this.failCallback = failCallback;
@@ -12,17 +16,19 @@ export default class Web3RPCHandler {
   }
 
   handle() {
-    console.log(this.payload);
-
     switch (this.payload.method) {
-      // case 'eth_accounts':
-      //     return void this.eth_accounts();
-      // case 'eth_coinbase':
-      //     return void this.eth_coinbase();
-      // case 'net_version':
-      //     return void this.net_version();
-      // case 'eth_sign':
-      //     return void this.eth_sign();
+      case 'eth_accounts':
+        this.ethAccounts();
+        break;
+      case 'eth_coinbase':
+        this.ethCoinbase();
+        break;
+      case 'net_version':
+        this.netVersion();
+        break;
+      case 'eth_sign':
+        this.ethSign();
+        break;
       // case 'personal_sign':
       //     return void this.personal_sign();
       // case 'personal_ecRecover':
@@ -30,7 +36,7 @@ export default class Web3RPCHandler {
       // case 'eth_signTypedData':
       //     return void this.eth_signTypedData();
       case 'eth_sendTransaction':
-        this.sendTransaction();
+        this.ethSendTransaction();
         break;
       // case 'eth_newFilter':
       //     return void this.eth_newFilter();
@@ -45,9 +51,8 @@ export default class Web3RPCHandler {
       // case 'eth_getFilterLogs':
       //     return void this.eth_getFilterLogs();
       default:
-        console.log('default');
-        // this.rpc.callMethod(e.method, e.params).then(this.respond).catch(this.failWithError)
-        this.fail(`Unable to handle ${this.payload.method} Method!`);
+        this.defaultHandler();
+        break;
     }
   }
 
@@ -63,7 +68,37 @@ export default class Web3RPCHandler {
     this.failCallback(this.payload.id, error);
   }
 
-  async sendTransaction() {
+  defaultHandler() {
+    axios.post(CONSTS.ROPSTEN_RPC_URL, this.payload)
+      .then((response) => {
+        if (response.data.id !== this.payload.id) {
+          this.fail('Response with an Invalid Id!');
+        }
+        this.respondCallback(response.data.id, response.data);
+      })
+      .catch(error => this.fail(error));
+  }
+
+  ethAccounts() {
+    this.respond(this.address ? [this.address] : []);
+  }
+
+  ethCoinbase() {
+    this.respond(this.address);
+  }
+
+  netVersion() {
+    this.respond(this.networkId);
+  }
+
+  ethSign() {
+    // TODO: 지금은 그냥 싸인해주지만 나중에는 모달이든 탭이든 별도의 장소로 빼서 싸인해야함
+    // TODO: 이 부분 ethereumjs-util을 사용하여 제대로 마무리하기
+    console.error('Unable to handle eth_sign method!');
+    this.web3.sign(this.payload.params[1], this.payload.params[0]);
+  }
+
+  async ethSendTransaction() {
     const param = this.payload.params[0];
     if (param.from !== this.address) {
       this.fail(`Can't sign for Unknown Address ${param.from}`);
