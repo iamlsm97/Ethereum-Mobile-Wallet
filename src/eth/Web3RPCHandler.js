@@ -112,24 +112,24 @@ export default class Web3RPCHandler {
       this.dispatch(Actions.tx.setTo(param.to));
     }
     if (param.value) {
-      this.dispatch(Actions.tx.setValue(param.value));
+      const value = this.web3.utils.fromWei(this.web3.utils.hexToNumberString(param.value), 'ether');
+      this.dispatch(Actions.tx.setValue(value));
     }
     if (param.gas) {
-      this.dispatch(Actions.tx.setGasLimit(param.gas));
+      const gasLimit = this.web3.utils.hexToNumberString(param.gas);
+      this.dispatch(Actions.tx.setGasLimit(gasLimit));
+    } else if (param.data) {
+      const gasLimit = await this.web3.eth.estimateGas({
+        from: this.address,
+        to: param.to,
+        data: param.data,
+      });
+      this.dispatch(Actions.tx.setGasLimit(gasLimit.toString()));
+      this.dispatch(Actions.tx.setData(param.data));
     }
     if (param.gasPrice) {
-      this.dispatch(Actions.tx.setGasPrice(param.gasPrice));
-    }
-    if (param.data) {
-      this.dispatch(Actions.tx.setData(param.data));
-      if (!param.gas) {
-        const gasLimit = await this.web3.eth.estimateGas({
-          from: this.address,
-          to: param.to,
-          data: param.data,
-        });
-        this.dispatch(Actions.tx.setGasLimit(gasLimit.toString()));
-      }
+      const gasPrice = this.web3.utils.fromWei(this.web3.utils.hexToNumberString(param.gasPrice), 'gwei');
+      this.dispatch(Actions.tx.setGasPrice(gasPrice));
     }
     this.dispatch(Actions.tx.setCallback({
       respond: this.respond.bind(this),

@@ -97,7 +97,7 @@ ${this.web3File}
     return (
       <WebView
         ref={this.webview}
-        source={{ uri: 'https://voting-dapp-ropsten.herokuapp.com/' }}
+        source={{ uri: 'https://hyunseokyoon.github.io/' }}
         onLoadStart={this.onLoadStart}
         onMessage={this.onMessage}
       />
