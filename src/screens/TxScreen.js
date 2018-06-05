@@ -9,6 +9,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Spinner from 'react-native-loading-spinner-overlay';
 import Toast from 'react-native-simple-toast';
 
 import { connect } from 'react-redux';
@@ -22,17 +24,23 @@ class TxScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      isLoading: false,
       txHash: '',
     };
   }
 
   estimateGas = async () => {
-    const gasLimit = await this.props.web3.eth.estimateGas({
-      from: this.props.address,
-      to: this.props.to,
-      data: this.props.data,
-    });
-    this.props.setGasLimit(gasLimit.toString());
+    try {
+      const gasLimit = await this.props.web3.eth.estimateGas({
+        from: this.props.address,
+        to: this.props.to,
+        data: this.props.data,
+      });
+      this.props.setGasLimit(gasLimit.toString());
+    } catch (error) {
+      Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+      console.warn(error.toString());
+    }
   }
 
   handleReject = () => {
@@ -45,6 +53,7 @@ class TxScreen extends Component {
   }
 
   handleApprove = async () => {
+    this.setState({ isLoading: true });
     const web3Utils = this.props.web3.utils;
     const value = this.props.value === '' ? '0' : this.props.value;
     const gasPrice = this.props.gasPrice === '' ? CONSTS.DEFAULT_GAS_PRICE.toString() : this.props.gasPrice;
@@ -59,13 +68,21 @@ class TxScreen extends Component {
       data: this.props.data,
     };
 
-    const tx = new EthereumTx(txParams);
-    tx.sign(Buffer.from(this.props.privateKey.substring(2), 'hex'));
+    let tx;
+    try {
+      tx = new EthereumTx(txParams);
+      tx.sign(Buffer.from(this.props.privateKey.substring(2), 'hex'));
+    } catch (error) {
+      this.setState({ isLoading: false });
+      Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+      console.warn(error.toString());
+      return;
+    }
     const serializedTx = tx.serialize();
 
     this.props.web3.eth.sendSignedTransaction(`0x${serializedTx.toString('hex')}`)
       .once('transactionHash', (txHash) => {
-        this.setState({ txHash });
+        this.setState({ isLoading: false, txHash });
         if (this.props.callback) {
           this.props.callback.respond(txHash);
           this.props.navigation.navigate('Browser');
@@ -73,13 +90,14 @@ class TxScreen extends Component {
         }
       })
       .once('receipt', (receipt) => {
-        Toast.show('Transaction is Confirmed!');
+        Toast.show('Transaction is Confirmed!', Toast.LONG);
         console.log(receipt);
         this.props.web3.eth.getBalance(this.props.address)
           .then(balance => this.props.setBalance(web3Utils.fromWei(balance, 'ether')));
       })
       .on('confirmation', (confNumber, receipt) => console.log(`confNumber: ${confNumber}, gasUsed: ${receipt.gasUsed}`))
       .on('error', (error) => {
+        this.setState({ isLoading: false });
         Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
         console.warn(error.toString());
       });
@@ -91,13 +109,19 @@ class TxScreen extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.container} >
+        <Spinner
+          visible={this.state.isLoading}
+          textContent="Making Transaction"
+          textStyle={{ color: '#ffffff' }}
+        />
+
         <View style={styles.formGroup}>
           <Text style={styles.formLabel}>From</Text>
           <TextInput
             style={styles.formInput}
             editable={false}
-            value={this.props.address}
+            value={`${this.props.address.substring(0, 32)}...`}
           />
         </View>
 
@@ -115,6 +139,7 @@ class TxScreen extends Component {
           <Text style={styles.formLabel}>Amount</Text>
           <TextInput
             style={styles.formInput}
+            keyboardType="numeric"
             placeholder="Enter Amount in ether to send"
             onChangeText={value => this.props.setValue(value)}
             value={this.props.value}
@@ -125,6 +150,7 @@ class TxScreen extends Component {
           <Text style={styles.formLabel}>Gas Price</Text>
           <TextInput
             style={styles.formInput}
+            keyboardType="numeric"
             placeholder={`Enter Gas Price in gwei. Default is ${CONSTS.DEFAULT_GAS_PRICE} gwei`}
             onChangeText={gasPrice => this.props.setGasPrice(gasPrice)}
             value={this.props.gasPrice}
@@ -136,11 +162,16 @@ class TxScreen extends Component {
           <View style={styles.formInput}>
             <TextInput
               style={{ flex: 1 }}
+              keyboardType="numeric"
               placeholder={`Default is ${CONSTS.DEFAULT_GAS_LIMIT}`}
               onChangeText={gasLimit => this.props.setGasLimit(gasLimit)}
               value={this.props.gasLimit}
             />
-            <Button title="Estimate" onPress={this.estimateGas} />
+            <Button
+              title="Estimate"
+              onPress={this.estimateGas}
+              disabled={this.props.to === '' && this.props.data === ''}
+            />
           </View>
         </View>
 
@@ -156,10 +187,18 @@ class TxScreen extends Component {
 
         <View style={styles.btnGroup}>
           <View style={styles.btnContainer}>
-            <Button title={this.props.callback ? 'Reject' : 'Clear'} onPress={this.handleReject} color="#ff0000" />
+            <Button
+              title={this.props.callback ? 'Reject' : 'Clear'}
+              onPress={this.handleReject}
+              color="#ff0000"
+            />
           </View>
           <View style={styles.btnContainer}>
-            <Button title="Approve" onPress={this.handleApprove} />
+            <Button
+              title="Approve"
+              onPress={this.handleApprove}
+              disabled={this.props.to === '' && this.props.data === ''}
+            />
           </View>
         </View>
 
@@ -168,7 +207,7 @@ class TxScreen extends Component {
           <Text>Tx Hash:</Text>
           <Text style={styles.textLink} onPress={this.openEtherscan}>{this.state.txHash}</Text>
         </View>}
-      </View>
+      </KeyboardAwareScrollView>
     );
   }
 }

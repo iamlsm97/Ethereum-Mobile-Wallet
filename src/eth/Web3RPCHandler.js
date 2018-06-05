@@ -17,14 +17,14 @@ export default class Web3RPCHandler {
 
   handle() {
     switch (this.payload.method) {
-      case 'eth_accounts':
-        this.ethAccounts();
+      case 'net_version':
+        this.netVersion();
         break;
       case 'eth_coinbase':
         this.ethCoinbase();
         break;
-      case 'net_version':
-        this.netVersion();
+      case 'eth_accounts':
+        this.ethAccounts();
         break;
       case 'eth_sign':
         this.ethSign();
@@ -38,18 +38,24 @@ export default class Web3RPCHandler {
       case 'eth_sendTransaction':
         this.ethSendTransaction();
         break;
-      // case 'eth_newFilter':
-      //     return void this.eth_newFilter();
-      // case 'eth_newBlockFilter':
-      //     return void this.eth_newBlockFilter();
-      // case 'eth_newPendingTransactionFilter':
-      //     return void this.eth_newPendingTransactionFilter();
-      // case 'eth_uninstallFilter':
-      //     return void this.eth_uninstallFilter();
-      // case 'eth_getFilterChanges':
-      //     return void this.eth_getFilterChanges();
-      // case 'eth_getFilterLogs':
-      //     return void this.eth_getFilterLogs();
+      case 'eth_newFilter':
+        this.ethNewFilter();
+        break;
+      case 'eth_newBlockFilter':
+        this.ethNewBlockFilter();
+        break;
+      case 'eth_newPendingTransactionFilter':
+        this.ethNewPendingTransactionFilter();
+        break;
+      case 'eth_uninstallFilter':
+        this.ethUninstallFilter();
+        break;
+      case 'eth_getFilterChanges':
+        this.ethGetFilterChanges();
+        break;
+      case 'eth_getFilterLogs':
+        this.ethGetFilterLogs();
+        break;
       default:
         this.defaultHandler();
         break;
@@ -82,23 +88,23 @@ export default class Web3RPCHandler {
       });
   }
 
-  ethAccounts() {
-    this.respond(this.address ? [this.address] : []);
+  netVersion() {
+    this.respond(this.networkId);
   }
 
   ethCoinbase() {
     this.respond(this.address);
   }
 
-  netVersion() {
-    this.respond(this.networkId);
+  ethAccounts() {
+    this.respond(this.address ? [this.address] : []);
   }
 
   ethSign() {
-    // TODO: 지금은 그냥 싸인해주지만 나중에는 모달이든 탭이든 별도의 장소로 빼서 싸인해야함
     // TODO: 이 부분 ethereumjs-util을 사용하여 제대로 마무리하기
-    console.error('Unable to handle eth_sign method!');
-    this.web3.sign(this.payload.params[1], this.payload.params[0]);
+    // TODO: 모달이든 탭이든 별도의 장소로 빼서 싸인해야함
+    console.warn('Unable to handle eth_sign method!');
+    console.log(this.payload);
   }
 
   async ethSendTransaction() {
@@ -137,5 +143,35 @@ export default class Web3RPCHandler {
     }));
 
     this.navigation.navigate('Tx');
+  }
+
+  ethNewFilter() {
+    console.warn('Unable to handle eth_newFilter method!');
+    console.log(this.payload);
+  }
+
+  ethNewBlockFilter() {
+    console.warn('Unable to handle eth_newBlockFilter method!');
+    console.log(this.payload);
+  }
+
+  ethNewPendingTransactionFilter() {
+    console.warn('Unable to handle eth_newPendingTransactionFilter method!');
+    console.log(this.payload);
+  }
+
+  ethUninstallFilter() {
+    console.warn('Unable to handle eth_uninstallFilter method!');
+    console.log(this.payload);
+  }
+
+  ethGetFilterChanges() {
+    console.warn('Unable to handle eth_getFilterChanges method!');
+    console.log(this.payload);
+  }
+
+  ethGetFilterLogs() {
+    console.warn('Unable to handle eth_getFilterLogs method!');
+    console.log(this.payload);
   }
 }

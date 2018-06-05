@@ -46,7 +46,7 @@ class AuthHomeScreen extends Component {
   };
 
   restoreWallet = () => {
-    const mnemonic = this.state.input;
+    const mnemonic = this.state.input.trim();
     if (!bip39.validateMnemonic(mnemonic)) {
       alert('Invalid Mnemonic');
       return;

@@ -5,7 +5,12 @@
  */
 
 import React, { Component } from 'react';
-import { YellowBox } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  YellowBox,
+} from 'react-native';
 
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -26,11 +31,20 @@ type Props = {};
 export default class App extends Component<Props> {
   render() {
     return (
-      <Provider store={store}>
-        <PersistGate loading={<WelcomeLoading />} persistor={persistor}>
-          <RootNavigator />
-        </PersistGate>
-      </Provider>
+      <View style={styles.container}>
+        <Provider store={store}>
+          <PersistGate loading={<WelcomeLoading />} persistor={persistor}>
+            <RootNavigator />
+          </PersistGate>
+        </Provider>
+      </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+  },
+});

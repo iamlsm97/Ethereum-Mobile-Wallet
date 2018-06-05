@@ -30,7 +30,8 @@ class BrowserScreen extends Component {
       networkId: 3,
     };
 
-    Platform.OS === 'ios' ? this.readWeb3FileIOS() : this.readWeb3FileAndroid()
+    const readWeb3File = Platform.OS === 'ios' ? this.readWeb3FileIOS() : this.readWeb3FileAndroid();
+    readWeb3File
       .then((result) => {
         this.web3File = result;
         this.jsToInject = `
@@ -46,12 +47,10 @@ ${this.web3File}
         });
       })
       .catch((error) => {
+        this.setState({ isLoading: false });
         Toast.show('Failed to read web3.min.js', Toast.LONG);
         Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
         console.warn(error.toString());
-        this.setState({
-          isLoading: false,
-        });
       });
   }
 
