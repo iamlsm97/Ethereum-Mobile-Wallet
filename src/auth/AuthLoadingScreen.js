@@ -7,6 +7,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
+import Toast from 'react-native-simple-toast';
 
 import { connect } from 'react-redux';
 
@@ -37,7 +38,8 @@ class AuthLoadingScreen extends Component {
       this.props.deriveWalletFromMnemonic(mnemonic)
         .then(() => this.props.navigation.navigate('App'))
         .catch((error) => {
-          console.warn(error);
+          Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+          console.warn(error.toString());
           this.props.navigation.navigate('Auth');
         });
     });

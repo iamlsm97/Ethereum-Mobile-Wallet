@@ -28,6 +28,7 @@ class TxScreen extends Component {
 
   estimateGas = async () => {
     const gasLimit = await this.props.web3.eth.estimateGas({
+      from: this.props.address,
       to: this.props.to,
       data: this.props.data,
     });
@@ -68,6 +69,7 @@ class TxScreen extends Component {
         if (this.props.callback) {
           this.props.callback.respond(txHash);
           this.props.navigation.navigate('Browser');
+          this.props.setCallback(null);
         }
       })
       .once('receipt', (receipt) => {
@@ -76,8 +78,11 @@ class TxScreen extends Component {
         this.props.web3.eth.getBalance(this.props.address)
           .then(balance => this.props.setBalance(web3Utils.fromWei(balance, 'ether')));
       })
-      .on('confirmation', (confNumber, receipt) => console.log(confNumber, receipt))
-      .on('error', error => console.warn(error));
+      .on('confirmation', (confNumber, receipt) => console.log(`confNumber: ${confNumber}, gasUsed: ${receipt.gasUsed}`))
+      .on('error', (error) => {
+        Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+        console.warn(error.toString());
+      });
   }
 
   openEtherscan = () => {
@@ -151,7 +156,7 @@ class TxScreen extends Component {
 
         <View style={styles.btnGroup}>
           <View style={styles.btnContainer}>
-            <Button title="Reject" onPress={this.handleReject} color="#ff0000" />
+            <Button title={this.props.callback ? 'Reject' : 'Clear'} onPress={this.handleReject} color="#ff0000" />
           </View>
           <View style={styles.btnContainer}>
             <Button title="Approve" onPress={this.handleApprove} />
@@ -199,6 +204,9 @@ const mapDispatchToProps = dispatch => ({
   },
   setData: (data) => {
     dispatch(Actions.tx.setData(data));
+  },
+  setCallback: (callback) => {
+    dispatch(Actions.tx.setCallback(callback));
   },
   clearTx: () => {
     dispatch(Actions.tx.clearTx());

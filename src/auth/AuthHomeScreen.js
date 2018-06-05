@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Hr from 'react-native-hr-plus';
 import Spinner from 'react-native-loading-spinner-overlay';
+import Toast from 'react-native-simple-toast';
 
 import { connect } from 'react-redux';
 
@@ -38,7 +39,8 @@ class AuthHomeScreen extends Component {
         .then(() => this.props.navigation.navigate('App'))
         .catch((error) => {
           this.setState({ isLoading: false });
-          console.warn(error);
+          Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+          console.warn(error.toString());
         });
     });
   };
@@ -56,7 +58,8 @@ class AuthHomeScreen extends Component {
         .then(() => this.props.navigation.navigate('App'))
         .catch((error) => {
           this.setState({ isLoading: false });
-          console.warn(error);
+          Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+          console.warn(error.toString());
         });
     });
   };

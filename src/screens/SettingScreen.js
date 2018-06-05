@@ -28,7 +28,8 @@ class SettingScreen extends Component {
       })
       .catch((error) => {
         Toast.show('Failed to get Ropsten Ether');
-        console.warn(error);
+        Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+        console.warn(error.toString());
       });
   };
 

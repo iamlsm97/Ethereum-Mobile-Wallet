@@ -42,7 +42,8 @@ class AccountScreen extends Component {
       .catch((error) => {
         this.setState({ isLoading: false });
         Toast.show('Invalid JSON RPC response', Toast.LONG);
-        console.warn(error);
+        Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+        console.warn(error.toString());
       });
   }
 
@@ -56,7 +57,8 @@ class AccountScreen extends Component {
       .catch((error) => {
         this.setState({ isLoading: false });
         Toast.show('Please Re-Fetch the Balance');
-        console.warn(error);
+        Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+        console.warn(error.toString());
       });
   }
 

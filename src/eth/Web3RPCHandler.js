@@ -76,7 +76,10 @@ export default class Web3RPCHandler {
         }
         this.respondCallback(response.data.id, response.data);
       })
-      .catch(error => this.fail(error));
+      .catch((error) => {
+        console.warn(error.toString());
+        this.fail(error.toString());
+      });
   }
 
   ethAccounts() {
@@ -121,6 +124,7 @@ export default class Web3RPCHandler {
       this.dispatch(Actions.tx.setData(param.data));
       if (!param.gas) {
         const gasLimit = await this.web3.eth.estimateGas({
+          from: this.address,
           to: param.to,
           data: param.data,
         });

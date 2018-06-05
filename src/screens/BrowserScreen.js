@@ -47,7 +47,8 @@ ${this.web3File}
       })
       .catch((error) => {
         Toast.show('Failed to read web3.min.js', Toast.LONG);
-        console.warn(error);
+        Toast.show(error.toString().split('\n', 1)[0], Toast.LONG);
+        console.warn(error.toString());
         this.setState({
           isLoading: false,
         });
@@ -96,7 +97,7 @@ ${this.web3File}
     return (
       <WebView
         ref={this.webview}
-        source={{ uri: 'https://hyunseokyoon.github.io/' }}
+        source={{ uri: 'https://voting-dapp-ropsten.herokuapp.com/' }}
         onLoadStart={this.onLoadStart}
         onMessage={this.onMessage}
       />
