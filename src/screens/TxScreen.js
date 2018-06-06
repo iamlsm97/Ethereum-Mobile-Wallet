@@ -109,7 +109,7 @@ class TxScreen extends Component {
 
   render() {
     return (
-      <KeyboardAwareScrollView contentContainerStyle={styles.container} >
+      <KeyboardAwareScrollView contentContainerStyle={styles.container}>
         <Spinner
           visible={this.state.isLoading}
           textContent="Making Transaction"

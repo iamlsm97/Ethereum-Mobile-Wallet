@@ -8,4 +8,6 @@ export default {
 
   DEFAULT_GAS_PRICE: 28, // in gwei
   DEFAULT_GAS_LIMIT: 21000,
+
+  INITIAL_URL: 'https://hyunseokyoon.github.io/',
 };
