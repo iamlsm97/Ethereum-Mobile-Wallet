@@ -5,6 +5,7 @@ const initialState = {
   gasLimit: '',
   data: '',
   callback: null,
+  txHash: '',
 };
 
 const txReducer = (state = initialState, action) => {
@@ -32,6 +33,10 @@ const txReducer = (state = initialState, action) => {
     case 'SET_CALLBACK':
       return Object.assign({}, state, {
         callback: action.callback,
+      });
+    case 'SET_TX_HASH':
+      return Object.assign({}, state, {
+        txHash: action.txHash,
       });
     case 'CLEAR_TX':
       return initialState;

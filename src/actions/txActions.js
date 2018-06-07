@@ -28,6 +28,11 @@ export const setCallback = callback => ({
   callback,
 });
 
+export const setTxHash = txHash => ({
+  type: 'SET_TX_HASH',
+  txHash,
+});
+
 export const clearTx = () => ({
   type: 'CLEAR_TX',
 });

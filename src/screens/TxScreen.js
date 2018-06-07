@@ -25,7 +25,6 @@ class TxScreen extends Component {
     super(props);
     this.state = {
       isLoading: false,
-      txHash: '',
     };
   }
 
@@ -49,7 +48,6 @@ class TxScreen extends Component {
       this.props.navigation.navigate('Browser');
     }
     this.props.clearTx();
-    this.setState({ txHash: '' });
   }
 
   handleApprove = async () => {
@@ -82,7 +80,8 @@ class TxScreen extends Component {
 
     this.props.web3.eth.sendSignedTransaction(`0x${serializedTx.toString('hex')}`)
       .once('transactionHash', (txHash) => {
-        this.setState({ isLoading: false, txHash });
+        this.props.setTxHash(txHash);
+        this.setState({ isLoading: false });
         if (this.props.callback) {
           this.props.callback.respond(txHash);
           this.props.navigation.navigate('Browser');
@@ -104,7 +103,7 @@ class TxScreen extends Component {
   }
 
   openEtherscan = () => {
-    Linking.openURL(`${CONSTS.ROPSTEN_ETHERSCAN_URL}/tx/${this.state.txHash}`);
+    Linking.openURL(`${CONSTS.ROPSTEN_ETHERSCAN_URL}/tx/${this.props.txHash}`);
   };
 
   render() {
@@ -202,10 +201,10 @@ class TxScreen extends Component {
           </View>
         </View>
 
-        {this.state.txHash !== '' &&
+        {this.props.txHash !== '' &&
         <View style={{ flex: 1, marginHorizontal: 10 }}>
           <Text>Tx Hash:</Text>
-          <Text style={styles.textLink} onPress={this.openEtherscan}>{this.state.txHash}</Text>
+          <Text style={styles.textLink} onPress={this.openEtherscan}>{this.props.txHash}</Text>
         </View>}
       </KeyboardAwareScrollView>
     );
@@ -223,6 +222,7 @@ const mapStateToProps = state => ({
   gasLimit: state.tx.gasLimit,
   data: state.tx.data,
   callback: state.tx.callback,
+  txHash: state.tx.txHash,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -246,6 +246,9 @@ const mapDispatchToProps = dispatch => ({
   },
   setCallback: (callback) => {
     dispatch(Actions.tx.setCallback(callback));
+  },
+  setTxHash: (txHash) => {
+    dispatch(Actions.tx.setTxHash(txHash));
   },
   clearTx: () => {
     dispatch(Actions.tx.clearTx());
